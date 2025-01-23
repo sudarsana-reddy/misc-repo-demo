@@ -34,4 +34,4 @@ jobs:
    if: always() && inputs.environment == 'prod' && needs.deploy.result != 'skipped'
    steps:
       - name: Print the 'build' job status
-        run: echo "build job's status- ${{ needs.deploy.status }}"
+        run: echo "build job's status- ${{ needs.deploy.outputs.job_status }}"
