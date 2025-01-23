@@ -6,6 +6,11 @@ on:
       environment:
         required: true
         default: 'prod'
+        type: choice
+        options:
+          - prod
+          - dev
+          - uat
 
 jobs:
   build:
