@@ -9,9 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    outputs:
-      job_status: ${{ job.status }}
+    runs-on: ubuntu-latest  
     steps:
       - name: Print 'Build' step
         run: echo "Build step passed."
