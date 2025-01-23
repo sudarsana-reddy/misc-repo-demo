@@ -16,9 +16,6 @@ jobs:
       - name: Print 'Build' step
         run: echo "Build step passed."
 
-      - name: Fail the step
-        run: exit 1
-
   deploy:
     needs: [build]
     runs-on: ubuntu-latest 
@@ -26,7 +23,10 @@ jobs:
       job_status: ${{ job.status }}
     steps:
       - name: Print deploy step
-        run: echo "Deploy step"     
+        run: echo "Deploy step"
+      
+      - name: Fail the step
+        run: exit 1
 
   notify:
    needs: [deploy]
