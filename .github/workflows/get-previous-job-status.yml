@@ -31,7 +31,7 @@ jobs:
   notify:
    needs: [deploy]
    runs-on: ubuntu-latest
-   if: always() && inputs.environment == 'prod' && needs.deploy.result != 'skipped'
+   if: inputs.environment == 'prod' && needs.deploy.result != 'skipped'
    steps:
       - name: Print the 'build' job status
         run: echo "build job's status- ${{ needs.deploy.outputs.job_status }}"
