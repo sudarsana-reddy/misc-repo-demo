@@ -14,7 +14,7 @@ jobs:
       job_status: ${{ job.status }}
     steps:
       - name: Print 'Build' step
-        run: echo "Build step passed.
+        run: echo "Build step passed."
 
   deploy:
     needs: [build]
