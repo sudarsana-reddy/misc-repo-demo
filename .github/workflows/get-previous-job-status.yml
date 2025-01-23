@@ -25,8 +25,8 @@ jobs:
       - name: Print deploy step
         run: echo "Deploy step"
 
-      # - name: Fail the step
-      #   run: exit 1
+      - name: Fail the step
+        run: exit 1
 
   notify:
    needs: [deploy]
