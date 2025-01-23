@@ -31,12 +31,7 @@ jobs:
   notify:
    needs: [deploy]
    runs-on: ubuntu-latest
-   if: ${{ always && input.environment == 'prod' }}
+   if: always() && input.environment == 'prod'
    steps:
       - name: Print the 'build' job status
         run: echo "build job's status- ${{ needs.deploy.outputs.job_status }}"
-   
-
-        
-  
-
