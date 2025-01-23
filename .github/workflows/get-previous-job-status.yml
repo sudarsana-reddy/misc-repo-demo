@@ -21,6 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print the 'build' job status
-        run: echo "build job's status: ${{ needs.build.outputs.job_status }}"
+        run: echo "build job's status- ${{ needs.build.outputs.job_status }}"
   
 
