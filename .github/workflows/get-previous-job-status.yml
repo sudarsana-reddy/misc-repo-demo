@@ -22,6 +22,7 @@ jobs:
   deploy:
     needs: [build]
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Print the 'build' job status
         run: echo "build job's status- ${{ needs.build.outputs.job_status }}"
