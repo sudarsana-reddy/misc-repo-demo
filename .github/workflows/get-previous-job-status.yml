@@ -1,0 +1,26 @@
+name: Get previous job's status
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        default: 'prod'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      job_status: ${{ job.status }}
+    steps:
+      - name: Print hello
+        run: echo "Build step passed."
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print the 'build' job status
+        run: echo "build job's status: ${{ needs.build.outputs.job_status }}"
+  
+
