@@ -16,6 +16,9 @@ jobs:
       - name: Print hello
         run: echo "Build step passed."
 
+      - name: Fail the step
+        run: exit 1
+
   deploy:
     needs: [build]
     runs-on: ubuntu-latest
