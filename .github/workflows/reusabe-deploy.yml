@@ -6,6 +6,10 @@ on:
       environment:
         required: true
         type: string
+    outputs:
+      job_status:
+        description: "The status of the job"
+        value: ${{ jobs.deploy.status }}
 
 jobs:
   deploy:
