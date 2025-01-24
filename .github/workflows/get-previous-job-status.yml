@@ -21,7 +21,7 @@ jobs:
 
   deploy:
     needs: [build]
-    uses: ./.github/workflows/get-previous-job-status.yml
+    uses: ./.github/workflows/reusabe-deploy.yml
     with:
       environment: ${{ inputs.environment }}
 
