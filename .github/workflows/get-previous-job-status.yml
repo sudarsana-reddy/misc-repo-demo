@@ -21,15 +21,9 @@ jobs:
 
   deploy:
     needs: [build]
-    runs-on: ubuntu-latest 
-    outputs:
-      job_status: ${{ job.status }}
-    steps:
-      - name: Print deploy step
-        run: echo "Deploy step"
-      
-      - name: Fail the step
-        run: exit 1
+    uses: ./.github/workflows/get-previous-job-status.yml
+    with:
+      environment: ${{ inputs.environment }}
 
   notify:
    needs: [deploy]
