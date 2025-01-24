@@ -10,6 +10,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs:
+      job_status: ${{ job.status }}
     steps:
       - name: Print deploy step
         run: echo "Deploy step"    
