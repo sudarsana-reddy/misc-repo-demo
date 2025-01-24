@@ -9,13 +9,11 @@ on:
     outputs:
       job_status:
         description: "The status of the job"
-        value: ${{ jobs.deploy.status }}
+        value: ${{ jobs.deploy.outcome }}
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    outputs:
-      job_status: ${{ job.status }}
+    runs-on: ubuntu-latest  
     steps:
       - name: Print deploy step
         run: echo "Deploy step"    
