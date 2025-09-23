@@ -1,0 +1,21 @@
+name: Test Env Url
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment: 
+      name: UAT
+      url: https://www.github.com
+    steps:
+      - name: Deploy to UAT
+        run: |
+          echo 'Deployed to UAT'
+    
+   
+
+ 
+
+    
