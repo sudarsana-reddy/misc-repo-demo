@@ -1,0 +1,54 @@
+name: Deploy with Issue Gate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{ steps.create.outputs.issue }}
+    steps:
+      - name: Create deployment issue
+        id: create
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Deployment Approval Required - ${new Date().toISOString()}`,
+              body: `Please complete this checklist **before closing the issue**:\n\n- [ ] Code review done\n- [ ] Tests passed\n- [ ] Release notes updated`
+            })
+            core.setOutput("issue", issue.data.number)
+
+  validate-issue:
+    runs-on: ubuntu-latest
+    needs: create-issue
+    environment:
+      name: UAT
+      url: https://github.com/${{ github.repository }}/issues/${{ needs.create-issue.outputs.issue_number }}
+    steps:
+      - name: Wait for issue to be closed
+        run: |
+          issue_number=${{ needs.create-issue.outputs.issue }}
+          for i in {1..60}; do  # up to 60 minutes (60*60s)
+            state=$(gh issue view $issue_number --json state -q .state)
+            if [ "$state" = "CLOSED" ]; then
+              echo "✅ Issue #$issue_number is closed. Proceeding..."
+              exit 0
+            fi
+            echo "⏳ Waiting... Issue #$issue_number still OPEN."
+            sleep 60
+          done
+          echo "❌ Timeout: Issue #$issue_number not closed within 60 minutes."
+          exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: validate-issue
+    steps:
+      - name: Deploy app
+        run: echo "🚀 Deploying to production..."
