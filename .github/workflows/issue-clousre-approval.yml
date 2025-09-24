@@ -29,9 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: create-issue   
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        
       - name: Extract issue number
         run: |
-          echo "ISSUE_NUMBER=${{ needs.create-issue.outputs.issue_number }}" >> $GITHUB_ENV          
+          echo "ISSUE_NUMBER=${{ needs.create-issue.outputs.issue_number }}" >> $GITHUB_ENV   
+          
       - name: Wait for issue to be closed
         run: |
           issue_number=$ISSUE_NUMBER
