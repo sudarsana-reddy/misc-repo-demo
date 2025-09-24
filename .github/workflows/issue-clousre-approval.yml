@@ -18,7 +18,7 @@ jobs:
   create-or-reuse-issue:
     runs-on: ubuntu-latest
     outputs:
-      issue_number: ${{ steps.set-output.outputs.issue_number }}
+      issue_number: ${{ steps.find.outputs.issue_number }}
     steps:
       - name: Find or create deployment issue
         id: find
@@ -67,7 +67,7 @@ jobs:
         
       - name: Extract issue number
         run: |
-          echo "ISSUE_NUMBER=${{ needs.create-issue.outputs.issue_number }}" >> $GITHUB_ENV   
+          echo "ISSUE_NUMBER=${{ needs.create-or-reuse-issue.outputs.issue_number }}" >> $GITHUB_ENV   
           
       - name: Wait for issue to be closed
         run: |
