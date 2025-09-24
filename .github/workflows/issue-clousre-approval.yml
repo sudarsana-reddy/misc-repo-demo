@@ -29,9 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: create-issue   
     steps:
+      - name: Extract issue number
+        run: |
+          echo "ISSUE_NUMBER=${{ needs.create-issue.outputs.issue_number }}" >> $GITHUB_ENV          
       - name: Wait for issue to be closed
         run: |
-          issue_number=${{ needs.create-issue.outputs.issue }}
+          issue_number=parseInt(process.env.ISSUE_NUMBER, 0);
           echo "Issue number:" + $issue_number
           for i in {1..60}; do  # up to 60 minutes (60*60s)
             state=$(gh issue view $issue_number --json state -q .state)
