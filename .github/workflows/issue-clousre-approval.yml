@@ -32,6 +32,7 @@ jobs:
       - name: Wait for issue to be closed
         run: |
           issue_number=${{ needs.create-issue.outputs.issue }}
+          echo "Issue number:" + $issue_number
           for i in {1..60}; do  # up to 60 minutes (60*60s)
             state=$(gh issue view $issue_number --json state -q .state)
             if [ "$state" = "CLOSED" ]; then
