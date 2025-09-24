@@ -49,9 +49,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: validate-issue
-     environment:
-      name: UAT
-      url: https://github.com/${{ github.repository }}/issues/${{ needs.create-issue.outputs.issue_number }}
+    environment:
+     name: UAT
+     url: https://github.com/${{ github.repository }}/issues/${{ needs.create-issue.outputs.issue_number }}
     steps:
       - name: Deploy app
         run: echo "🚀 Deploying to production..."
