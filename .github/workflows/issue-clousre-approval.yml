@@ -1,33 +1,66 @@
-name: Deploy with Issue Gate
+name: Deployment with Issue Gate
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for deployment"
+        required: true
+        default: "prod"
+
+env:
+  DEPLOY_ENV: ${{ github.event.inputs.environment }}
 
 permissions:
   issues: write
 
 jobs:
-  create-issue:
+  create-or-reuse-issue:
     runs-on: ubuntu-latest
     outputs:
-      issue_number: ${{ steps.create.outputs.issue }}
+      issue_number: ${{ steps.set-output.outputs.issue_number }}
     steps:
-      - name: Create deployment issue
-        id: create
+      - name: Find or create deployment issue
+        id: find
         uses: actions/github-script@v8
         with:
           script: |
-            const issue = await github.rest.issues.create({
+            const envName = process.env.DEPLOY_ENV;
+            const titlePrefix = `Deployment Approval Required - ${envName}`;
+
+            // List open issues
+            const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Deployment Approval Required - ${new Date().toISOString()}`,
-              body: `Please complete this checklist **before closing the issue**:\n\n- [ ] Code review done\n- [ ] Tests passed\n- [ ] Release notes updated`
-            })
-            core.setOutput("issue", issue.data.number)
+              state: "open",
+            });
+
+            // Look for an open issue for this environment
+            let issue_number;
+            const existing = issues.data.find(i => i.title.startsWith(titlePrefix));
+            if (existing) {
+              issue_number = existing.number;
+              core.notice(`Found existing open deployment issue for ${envName}: #${issue_number}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `${titlePrefix} - ${new Date().toISOString()}`,
+                body: `Please complete this checklist before closing:\n- [ ] Code review done\n- [ ] Tests passed\n- [ ] Release notes updated`,
+                labels: [`deployment-${envName}`],
+              });
+              issue_number = issue.data.number;
+              core.notice(`Created new deployment issue for ${envName}: #${issue_number}`);
+            }
+
+            core.setOutput("issue_number", issue_number);
+
+      - name: Set environment URL
+        run: echo "ISSUE_NUMBER=${{ steps.find.outputs.issue_number }}" >> $GITHUB_ENV
 
   validate-issue:
     runs-on: ubuntu-latest
-    needs: create-issue   
+    needs: create-or-reuse-issue   
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
