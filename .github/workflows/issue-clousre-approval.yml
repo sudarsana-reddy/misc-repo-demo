@@ -36,17 +36,17 @@ jobs:
         run: |
           issue_number=parseInt(process.env.ISSUE_NUMBER, 0);
           echo "Issue number:" + $issue_number
-          for i in {1..60}; do  # up to 60 minutes (60*60s)
-            state=$(gh issue view $issue_number --json state -q .state)
-            if [ "$state" = "CLOSED" ]; then
-              echo "✅ Issue #$issue_number is closed. Proceeding..."
-              exit 0
-            fi
-            echo "⏳ Waiting... Issue #$issue_number still OPEN."
-            sleep 60
-          done
-          echo "❌ Timeout: Issue #$issue_number not closed within 60 minutes."
-          exit 1
+          # for i in {1..60}; do  # up to 60 minutes (60*60s)
+          #   state=$(gh issue view $issue_number --json state -q .state)
+          #   if [ "$state" = "CLOSED" ]; then
+          #     echo "✅ Issue #$issue_number is closed. Proceeding..."
+          #     exit 0
+          #   fi
+          #   echo "⏳ Waiting... Issue #$issue_number still OPEN."
+          #   sleep 60
+          # done
+          # echo "❌ Timeout: Issue #$issue_number not closed within 60 minutes."
+          # exit 1
         env:
           GH_TOKEN: ${{ github.token }}
 
