@@ -20,6 +20,12 @@ jobs:
     outputs:
       issue_number: ${{ steps.find.outputs.issue_number }}
     steps:
+      - name: Get changes since last deployment
+        id: changes
+        run: |
+          echo "CHANGES=List of changes since last deployment" >> $GITHUB_ENV
+          echo "Changes detected: $CHANGES"
+
       - name: Find or create deployment issue
         id: find
         uses: actions/github-script@v8
