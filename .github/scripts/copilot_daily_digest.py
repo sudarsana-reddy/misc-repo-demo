@@ -52,8 +52,9 @@ def parse_items(xml_bytes: bytes):
     return items
 
 
-def collect_yesterday_matches(items):
-    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date()
+def collect_last_two_days_matches(items):
+    today = datetime.now(timezone.utc).date()
+    yesterday = today - timedelta(days=1)
     matches = []
 
     for node in items:
@@ -82,7 +83,8 @@ def collect_yesterday_matches(items):
         except Exception:
             continue
 
-        if published_at.date() != yesterday:
+        # Check if published date is within the last 2 days (yesterday or today)
+        if published_at.date() not in (yesterday, today):
             continue
 
         matches.append(
@@ -101,8 +103,9 @@ def build_email_body(matches):
     if not matches:
         return ""
 
+    today = datetime.now(timezone.utc).date().isoformat()
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
-    lines = [f"GitHub Copilot updates for {yesterday}", ""]
+    lines = [f"GitHub Copilot updates for {yesterday} and {today}", ""]
     for item in matches:
         lines.append(f"- {item['title']}")
         lines.append(f"  Published: {item['published']}")
@@ -118,7 +121,7 @@ def main() -> int:
     try:
         xml_bytes = fetch_feed()
         items = parse_items(xml_bytes)
-        matches = collect_yesterday_matches(items)
+        matches = collect_last_two_days_matches(items)
     except Exception:
         write_result("false", "")
         return 0
@@ -129,7 +132,7 @@ def main() -> int:
         print(body)
     else:
         write_result("false", "")
-        print("No new GitHub Copilot changes or updates were published yesterday.")
+        print("No new GitHub Copilot changes or updates were published in the last 2 days.")
 
     return 0
 
