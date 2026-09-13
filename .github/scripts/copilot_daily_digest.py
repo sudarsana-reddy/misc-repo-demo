@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import uuid
 import urllib.request
 import xml.etree.ElementTree as ET
 import html as _html
@@ -20,11 +21,16 @@ def write_result(has_updates: str, body: str) -> None:
             print(body)
         return
 
+    # Use a unique delimiter so the body cannot accidentally close the heredoc
+    delim = f"DELIM_{uuid.uuid4().hex}"
     with open(OUTPUT_PATH, "a", encoding="utf-8") as fh:
         fh.write(f"has_updates={has_updates}\n")
-        fh.write("email_body<<'EOF'\n")
-        fh.write(f"{body}\n")
-        fh.write("EOF\n")
+        fh.write(f"email_body<<{delim}\n")
+        if body:
+            fh.write(body)
+            if not body.endswith("\n"):
+                fh.write("\n")
+        fh.write(f"{delim}\n")
 
 
 def clean_html(raw: str) -> str:
@@ -64,6 +70,16 @@ def clean_html(raw: str) -> str:
     final = "\n".join([ln for ln in lines if ln])
 
     return final.strip()
+
+
+def strip_github_blog_footer(text: str) -> str:
+    """Remove trailing "first on The GitHub Blog" footer (and common variants).
+
+    This strips trailing punctuation/dashes and is case-insensitive.
+    """
+    if not text:
+        return text
+    return re.sub(r"(?i)\s*[-–—:]*\s*first on the github blog\.?\s*$", "", text).strip()
 
 
 def fetch_feed() -> bytes:
@@ -160,7 +176,7 @@ def collect_last_two_days_matches(items):
             summary = node.find(f"{ns}summary")
             content = node.find(f"{ns}content")
             raw_desc = ""
-            if summary is not None and (summary.text or len(summary)):  # summary may contain inner XML
+            if summary is not None and (summary.text or len(summary)):
                 raw_desc = ET.tostring(summary, encoding="unicode", method="xml")
             elif content is not None and (content.text or len(content)):
                 raw_desc = ET.tostring(content, encoding="unicode", method="xml")
@@ -182,12 +198,16 @@ def collect_last_two_days_matches(items):
         if len(desc_short) > 2000:
             desc_short = desc_short[:2000].rsplit(" ", 1)[0] + "..."
 
+        # Remove trailing "first on The GitHub Blog" footer from title and description
+        title_clean = strip_github_blog_footer(str(title or "Untitled").strip())
+        desc_clean = strip_github_blog_footer(desc_short)
+
         matches.append(
             {
-                "title": str(title or "Untitled").strip(),
+                "title": title_clean,
                 "link": str(link or "").strip(),
                 "published": published_at.strftime("%Y-%m-%d %H:%M UTC"),
-                "description": desc_short,
+                "description": desc_clean,
             }
         )
 
