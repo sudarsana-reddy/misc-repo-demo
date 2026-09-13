@@ -5,7 +5,7 @@ import re
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
 FEED_URL = os.environ.get("FEED_URL", "https://github.blog/changelog/label/copilot/feed/")
@@ -52,8 +52,8 @@ def parse_items(xml_bytes: bytes):
     return items
 
 
-def collect_today_matches(items):
-    today = datetime.now(timezone.utc).date()
+def collect_yesterday_matches(items):
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date()
     matches = []
 
     for node in items:
@@ -82,7 +82,7 @@ def collect_today_matches(items):
         except Exception:
             continue
 
-        if published_at.date() != today:
+        if published_at.date() != yesterday:
             continue
 
         matches.append(
@@ -101,8 +101,8 @@ def build_email_body(matches):
     if not matches:
         return ""
 
-    today = datetime.now(timezone.utc).date().isoformat()
-    lines = [f"GitHub Copilot updates for {today}", ""]
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
+    lines = [f"GitHub Copilot updates for {yesterday}", ""]
     for item in matches:
         lines.append(f"- {item['title']}")
         lines.append(f"  Published: {item['published']}")
@@ -118,7 +118,7 @@ def main() -> int:
     try:
         xml_bytes = fetch_feed()
         items = parse_items(xml_bytes)
-        matches = collect_today_matches(items)
+        matches = collect_yesterday_matches(items)
     except Exception:
         write_result("false", "")
         return 0
@@ -129,7 +129,7 @@ def main() -> int:
         print(body)
     else:
         write_result("false", "")
-        print("No new GitHub Copilot changes or updates were published today.")
+        print("No new GitHub Copilot changes or updates were published yesterday.")
 
     return 0
 
