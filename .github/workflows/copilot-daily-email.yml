@@ -1,0 +1,42 @@
+name: Daily GitHub Copilot changelog email
+
+on:
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-copilot-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Fetch today's GitHub Copilot changelog entries
+        id: changelog
+        env:
+          FEED_URL: https://github.blog/changelog/label/copilot/feed/
+        run: python3 .github/scripts/copilot_daily_digest.py
+
+      - name: Debug changelog outputs
+        run: |
+          echo "has_updates=${{ steps.changelog.outputs.has_updates }}"
+          echo "email_body=${{ steps.changelog.outputs.email_body }}"
+
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: ${{ steps.changelog.outputs.has_updates == 'true' && 'GitHub Copilot daily updates' || 'No new GitHub Copilot changes or updates' }}
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
+          body: ${{ steps.changelog.outputs.has_updates == 'true' && steps.changelog.outputs.email_body || '' }}
+
+# Required repository secrets:
+#   SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_TO
+# Optional:
+#   EMAIL_FROM (if you want a different sender address)
