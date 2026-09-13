@@ -55,6 +55,7 @@ def parse_items(xml_bytes: bytes):
 def collect_last_two_days_matches(items):
     today = datetime.now(timezone.utc).date()
     yesterday = today - timedelta(days=1)
+    day_before_yesterday = today - timedelta(days=2)
     matches = []
 
     for node in items:
@@ -83,8 +84,8 @@ def collect_last_two_days_matches(items):
         except Exception:
             continue
 
-        # Check if published date is within the last 2 days (yesterday or today)
-        if published_at.date() not in (yesterday, today):
+        # Check if published date is within the last 2 days (yesterday or day before yesterday)
+        if published_at.date() not in (yesterday, day_before_yesterday):
             continue
 
         matches.append(
@@ -103,9 +104,9 @@ def build_email_body(matches):
     if not matches:
         return ""
 
-    today = datetime.now(timezone.utc).date().isoformat()
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
-    lines = [f"GitHub Copilot updates for {yesterday} and {today}", ""]
+    day_before_yesterday = (datetime.now(timezone.utc) - timedelta(days=2)).date().isoformat()
+    lines = [f"GitHub Copilot updates for {day_before_yesterday} and {yesterday}", ""]
     for item in matches:
         lines.append(f"- {item['title']}")
         lines.append(f"  Published: {item['published']}")
